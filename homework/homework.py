@@ -74,30 +74,15 @@ def clean_data(data_df):
     df.loc[df['EDUCATION'] > 4, 'EDUCATION'] = 4
     return df
 
-
-#
 # Paso 2.
 # Divida los datasets en x_train, y_train, x_test, y_test.
-#
-
 def get_features_target(data, target_column):
     x = data.drop(columns=target_column)
     y = data[target_column]
     return x, y
 
-
-#
 # Paso 3.
 # Cree un pipeline para el modelo de clasificación. Este pipeline debe
-# contener las siguientes capas:
-# - Transforma las variables categoricas usando el método
-#   one-hot-encoding.
-# - Descompone la matriz de entrada usando PCA. El PCA usa todas las componentes.
-# - Estandariza la matriz de entrada.
-# - Selecciona las K columnas mas relevantes de la matrix de entrada.
-# - Ajusta una maquina de vectores de soporte (svm).
-#
-
 def create_pipeline(df):
     categorical_features = ['SEX', 'EDUCATION', 'MARRIAGE']
     numerical_features = [col for col in df.columns if col not in categorical_features + (['default'] if 'default' in df.columns else [])]
@@ -121,14 +106,8 @@ def create_pipeline(df):
     )
     return pipeline
 
-
-#
 # Paso 4.
 # Optimice los hiperparametros del pipeline usando validación cruzada.
-# Use 10 splits para la validación cruzada. Use la función de precision
-# balanceada para medir la precisión del modelo.
-#
-
 def optimize_hyperparameters(pipeline, x_train, y_train):
     param_grid = {
         'pca__n_components': [21],
@@ -147,33 +126,16 @@ def optimize_hyperparameters(pipeline, x_train, y_train):
     grid_search.fit(x_train, y_train)
     return grid_search
 
-
-#
 # Paso 5.
 # Guarde el modelo (comprimido con gzip) como "files/models/model.pkl.gz".
-# Recuerde que es posible guardar el modelo comprimido usanzo la libreria gzip.
-#
-
 def save_model(model):
     if not os.path.exists('files/models'):
         os.makedirs('files/models')
     with gzip.open('files/models/model.pkl.gz', 'wb') as f:
         pickle.dump(model, f)
 
-
-#
 # Paso 6.
 # Calcule las metricas de precision, precision balanceada, recall,
-# y f1-score para los conjuntos de entrenamiento y prueba.
-# Guardelas en el archivo files/output/metrics.json. Cada fila
-# del archivo es un diccionario con las metricas de un modelo.
-# Este diccionario tiene un campo para indicar si es el conjunto
-# de entrenamiento o prueba. Por ejemplo:
-#
-# {'dataset': 'train', 'precision': 0.8, 'balanced_accuracy': 0.7, 'recall': 0.9, 'f1_score': 0.85}
-# {'dataset': 'test', 'precision': 0.7, 'balanced_accuracy': 0.6, 'recall': 0.8, 'f1_score': 0.75}
-#
-
 def calculate_metrics(model, x_train, y_train, x_test, y_test):
     y_train_pred = model.predict(x_train)
     y_test_pred = model.predict(x_test)
@@ -195,18 +157,8 @@ def calculate_metrics(model, x_train, y_train, x_test, y_test):
     }
     return metrics_train, metrics_test
 
-
-#
 # Paso 7.
 # Calcule las matrices de confusion para los conjuntos de entrenamiento y
-# prueba. Guardelas en el archivo files/output/metrics.json. Cada fila
-# del archivo es un diccionario con las metricas de un modelo.
-# de entrenamiento o prueba. Por ejemplo:
-#
-# {'type': 'cm_matrix', 'dataset': 'train', 'true_0': {"predicted_0": 15562, "predicte_1": 666}, 'true_1': {"predicted_0": 3333, "predicted_1": 1444}}
-# {'type': 'cm_matrix', 'dataset': 'test', 'true_0': {"predicted_0": 15562, "predicte_1": 650}, 'true_1': {"predicted_0": 2490, "predicted_1": 1420}}
-#
-
 def calculate_confusion_matrix(model, x_train, y_train, x_test, y_test):
     y_train_pred = model.predict(x_train)
     y_test_pred = model.predict(x_test)
